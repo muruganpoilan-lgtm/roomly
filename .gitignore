@@ -1,0 +1,21 @@
+# secrets and local settings
+.env
+.env.local
+# dependencies and build output
+node_modules/
+.next/
+__pycache__/
+*.pyc
+.venv/
+venv/
+# uploaded photos (development)
+backend/uploads/
+# Flutter
+roomly_app/build/
+roomly_app/.dart_tool/
+roomly_app/.flutter-plugins*
+# editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
