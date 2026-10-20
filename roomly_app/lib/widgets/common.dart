@@ -93,3 +93,34 @@ void snack(BuildContext context, String message) {
     ..hideCurrentSnackBar()
     ..showSnackBar(SnackBar(content: Text(message)));
 }
+
+// A small outlined status label such as "Live" or "Waiting for approval".
+class Pill extends StatelessWidget {
+  final String text;
+  final Color color;
+  const Pill(this.text, this.color, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+      decoration: BoxDecoration(border: Border.all(color: color, width: 1.5), borderRadius: BorderRadius.circular(99)),
+      child: Text(text, style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 12.5)),
+    );
+  }
+}
+
+Future<bool> askYesNo(BuildContext context, String title, String message, String yes) async {
+  final r = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(title),
+      content: Text(message),
+      actions: [
+        TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Keep')),
+        TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: Text(yes, style: const TextStyle(color: C.brick))),
+      ],
+    ),
+  );
+  return r == true;
+}

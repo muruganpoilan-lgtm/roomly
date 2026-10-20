@@ -39,4 +39,15 @@ Paying: when the backend has Razorpay keys, a held booking shows **Pay ₹...** 
 (uses the `razorpay_flutter` package, which `flutter pub get` fetches). Without keys it shows the test confirm button.
 Refunds on cancellation follow the rule in the website README.
 
-Owner and admin tools (adding properties, rooms, photos, dates) stay on the website.
+## Owner and admin tools (Manage tab)
+Sign up with **I want to list my property** ticked (or log in as an owner or admin) and a fourth tab, **Manage**, appears:
+- Add a property: name, type, city, address, description, amenities
+- Add photos from the phone gallery to the property and to each room (first photo is the cover)
+- Add rooms with price, number of rooms and guests; open dates for booking and set a special price
+- See the next 60 nights and every booking on your properties
+- Admins also see **Waiting for your approval** and can Approve or Reject new places
+
+New properties are hidden from guests until an admin approves them.
+
+Photo picking: Android needs nothing extra. On iOS add this to `ios/Runner/Info.plist`:
+`NSPhotoLibraryUsageDescription` = "Choose photos of your property".

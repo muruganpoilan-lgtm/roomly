@@ -21,6 +21,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _password = TextEditingController();
   bool _busy = false;
   bool _hide = true;
+  bool _owner = false;
   String _error = '';
 
   @override
@@ -65,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
         'email': email,
         'phone': phone.isEmpty ? null : phone,
         'password': password,
-        'role': 'guest',
+        'role': _owner ? 'owner' : 'guest',
       });
     } else {
       res = await Api.post('/auth/login', body: {'email': email, 'password': password});
@@ -105,6 +106,13 @@ class _LoginScreenState extends State<LoginScreen> {
           if (_signUp) ...[
             const SizedBox(height: 14),
             TextField(controller: _phone, keyboardType: TextInputType.phone, decoration: fieldDeco('Mobile number (optional)')),
+            CheckboxListTile(
+              contentPadding: EdgeInsets.zero,
+              controlAffinity: ListTileControlAffinity.leading,
+              value: _owner,
+              onChanged: (v) => setState(() => _owner = v ?? false),
+              title: const Text('I want to list my property'),
+            ),
           ],
           const SizedBox(height: 14),
           TextField(

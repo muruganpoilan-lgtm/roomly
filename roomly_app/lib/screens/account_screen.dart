@@ -42,11 +42,12 @@ class AccountScreen extends StatelessWidget {
                 ]),
               ),
               if (role != 'guest')
-                const Padding(
-                  padding: EdgeInsets.only(top: 12),
-                  child: Text(
-                    'Adding properties, rooms, photos and open dates is done on the Roomly website for now. This app is for guests.',
-                    style: TextStyle(color: C.soft),
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: FilledButton.icon(
+                    onPressed: () => tabIndex.value = 3,
+                    icon: const Icon(Icons.storefront),
+                    label: const Text('Manage your properties'),
                   ),
                 ),
               const SizedBox(height: 16),

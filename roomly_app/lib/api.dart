@@ -24,6 +24,29 @@ class Api {
 
   static Future<ApiResult> post(String path, {Object? body}) => _send('POST', path, body: body);
 
+  static Future<ApiResult> put(String path, {Object? body}) => _send('PUT', path, body: body);
+
+  static Future<ApiResult> patch(String path, {Object? body}) => _send('PATCH', path, body: body);
+
+  static Future<ApiResult> delete(String path) => _send('DELETE', path);
+
+  // Upload photos. Each entry is (file name, file bytes). The server reads the field called "files".
+  static Future<ApiResult> uploadFiles(String path, List<MapEntry<String, List<int>>> files) async {
+    final req = http.MultipartRequest('POST', Uri.parse('$apiBase$path'));
+    final t = token;
+    if (t != null) req.headers['Authorization'] = 'Bearer $t';
+    for (final f in files) {
+      req.files.add(http.MultipartFile.fromBytes('files', f.value, filename: f.key));
+    }
+    try {
+      final streamed = await req.send().timeout(const Duration(seconds: 120));
+      final res = await http.Response.fromStream(streamed);
+      return _finish(res);
+    } catch (_) {
+      return ApiResult.failure(0, "Can't reach the Roomly server. Check that the backend is running and the address in config.dart is right.");
+    }
+  }
+
   static Future<ApiResult> _send(String method, String path, {Map<String, String>? query, Object? body}) async {
     var uri = Uri.parse('$apiBase$path');
     if (query != null && query.isNotEmpty) {
@@ -36,33 +59,43 @@ class Api {
 
     try {
       http.Response res;
+      const wait = Duration(seconds: 20);
+      final encoded = body == null ? null : jsonEncode(body);
       if (method == 'GET') {
-        res = await http.get(uri, headers: headers).timeout(const Duration(seconds: 20));
+        res = await http.get(uri, headers: headers).timeout(wait);
+      } else if (method == 'PUT') {
+        res = await http.put(uri, headers: headers, body: encoded).timeout(wait);
+      } else if (method == 'PATCH') {
+        res = await http.patch(uri, headers: headers, body: encoded).timeout(wait);
+      } else if (method == 'DELETE') {
+        res = await http.delete(uri, headers: headers).timeout(wait);
       } else {
-        res = await http
-            .post(uri, headers: headers, body: body == null ? null : jsonEncode(body))
-            .timeout(const Duration(seconds: 20));
+        res = await http.post(uri, headers: headers, body: encoded).timeout(wait);
       }
-      dynamic data;
-      try {
-        data = jsonDecode(utf8.decode(res.bodyBytes));
-      } catch (_) {
-        data = null;
-      }
-      if (res.statusCode >= 200 && res.statusCode < 300) {
-        return ApiResult.success(res.statusCode, data);
-      }
-      if (res.statusCode == 401) {
-        final cb = onUnauthorized;
-        if (cb != null) cb();
-      }
-      return ApiResult.failure(res.statusCode, _message(data));
+      return _finish(res);
     } catch (_) {
       return ApiResult.failure(
         0,
         "Can't reach the Roomly server. Check that the backend is running and the address in config.dart is right.",
       );
     }
+  }
+
+  static ApiResult _finish(http.Response res) {
+    dynamic data;
+    try {
+      data = jsonDecode(utf8.decode(res.bodyBytes));
+    } catch (_) {
+      data = null;
+    }
+    if (res.statusCode >= 200 && res.statusCode < 300) {
+      return ApiResult.success(res.statusCode, data);
+    }
+    if (res.statusCode == 401) {
+      final cb = onUnauthorized;
+      if (cb != null) cb();
+    }
+    return ApiResult.failure(res.statusCode, _message(data));
   }
 
   // FastAPI sends {"detail": "text"} or, for bad input, {"detail": [{"loc": [...], "msg": "..."}]}.
